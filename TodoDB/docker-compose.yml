@@ -1,0 +1,53 @@
+# Setting PostgresSQL 
+# when run 'docker compose up -d' is make image in docker desktop
+name: preflight
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: PF-DB
+    ports:
+      - 5432:${POSTGRES_PORT}
+    volumes:
+      - pf-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    networks:
+      - pf-net
+volumes:
+  pf-data:
+networks:
+  pf-net:
+
+# 'docker ps' Check docker runing
+# 'docker exec -it [nameDB-container] bash' connecting to container via bash shell (in terminal)
+# 'psql -U [POSTGRES_USER] -d [POSTGRES_DB]' connecting Database in user role
+
+# 'REVOKE CONNECT ON DATABASE mydb FROM public;'
+# คำสั่งนี้จะเพิกถอนสิทธิ์การเชื่อมต่อกับฐานข้อมูล mydb จากกลุ่ม public ซึ่งเป็นกลุ่มที่รวมผู้ใช้ทั้งหมดในฐานข้อมูล PostgreSQL โดยอัตโนมัติ
+
+# REVOKE ALL ON SCHEMA public FROM PUBLIC;
+# คำสั่งนี้จะเพิกถอนสิทธิ์ทั้งหมดจากกลุ่ม public บนสคีมา public ซึ่งเป็นสคีมาเริ่มต้นใน PostgreSQL
+
+# CREATE USER appuser WITH PASSWORD '1234';
+# คำสั่งนี้จะสร้างผู้ใช้ใหม่ชื่อ appuser และตั้งรหัสผ่านให้กับผู้ใช้นั้นเป็น 1234
+
+# CREATE SCHEMA drizzle;
+# คำสั่งนี้จะสร้างสคีมาใหม่ชื่อ drizzle ภายในฐานข้อมูล mydb
+
+# GRANT ALL ON DATABASE mydb TO appuser;
+# คำสั่งนี้จะให้สิทธิ์ทั้งหมดบนฐานข้อมูล mydb แก่ผู้ใช้ appuser
+
+# GRANT ALL ON SCHEMA public TO appuser;
+# คำสั่งนี้จะให้สิทธิ์ทั้งหมดบนสคีมา public แก่ผู้ใช้ appuser
+
+# GRANT ALL ON SCHEMA drizzle TO appuser;
+# คำสั่งนี้จะให้สิทธิ์ทั้งหมดบนสคีมา drizzle แก่ผู้ใช้ appuser 
+
+# when create Network (pf-net) the vlan in network can connect to outside but cannot connect back to it ,
+# so you must have to make PORT MAPPING to connect [Docker container <-> Database client (DBeaver)]
+# ports:
+      # - 5432:${POSTGRES_PORT} :: Mapping port 5432 Host <-> port 5432 of container
+
+# volumes: ระบุโวลุ่มที่ใช้เก็บข้อมูลของ PostgreSQL โดย pf-data จะถูกแมพไปที่ /var/lib/postgresql/data ภายในคอนเทนเนอร์
